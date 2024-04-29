@@ -153,7 +153,7 @@ class PodimoClient:
             else:
                 raise ValueError("Invalid Podimo credentials, did not receive token")
 
-    async def getPodcasts(self, podcast_id, scraper):
+    async def getPodcasts(self, podcast_id, scraper, offset):
         podcast = getCacheEntry(podcast_id, podcast_cache)
         if podcast:
             timestamp, _ = podcast_cache[podcast_id]
@@ -208,7 +208,7 @@ class PodimoClient:
         variables = {
             "podcastId": podcast_id,
             "limit": 100,
-            "offset": 0,
+            "offset": offset,
             "sorting": "PUBLISHED_DESCENDING",
         }
         result = await self.post(headers, query, variables, scraper)
