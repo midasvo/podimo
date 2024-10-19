@@ -1,3 +1,4 @@
+
 # Copyright 2022 Thijs Raymakers
 #
 # Licensed under the EUPL, Version 1.2 or – as soon they
@@ -148,16 +149,16 @@ async def index():
             podcast_id = quote(str(podcast_id), safe="")
             region = quote(str(region), safe="")
             locale = quote(str(locale), safe="")
-            
+
             if LOCAL_CREDENTIALS:
                 url = f"{PODIMO_PROTOCOL}://{PODIMO_HOSTNAME}/feed/{podcast_id}.xml?{randomHexId(10)}&region={region}&locale={locale}"
             else:
                 email = quote(str(email), safe="")
                 comma = quote(',', safe="")
                 username = f"{email}{comma}{region}{comma}{locale}"
-                password = quote(str(password), safe="")             
+                password = quote(str(password), safe="")
                 url = f"{PODIMO_PROTOCOL}://{username}:{password}@{PODIMO_HOSTNAME}/feed/{podcast_id}.xml?{randomHexId(10)}&region={region}&locale={locale}"
-            
+
             logging.debug(f"Created an URL: {url}.")
             return await render_template("feed_location.html", url=url)
 
@@ -204,13 +205,13 @@ def token_key(username, password):
 
 @app.route("/feed/<string:username>/<string:password>/<string:podcast_id>.xml")
 async def serve_feed(username, password, podcast_id, region, locale):
-    
+
     logging.debug(f"Feed request for podcast {podcast_id} from IP {request.remote_addr} with User-Agent:{request.user_agent}.")
-    
+
     # Check if it is a valid podcast id string
     if podcast_id_pattern.fullmatch(podcast_id) is None:
         return Response("Invalid podcast id format", 400, {})
-   
+
     if region not in [region_code for (region_code, _) in REGIONS]:
         return Response("Invalid region", 400, {})
     if locale not in LOCALES:
@@ -219,8 +220,8 @@ async def serve_feed(username, password, podcast_id, region, locale):
     # Check if url contains unique ID or podcastID in blocked list. If so, return HTTP code 410 GONE
     if any(item in request.url for item in BLOCKED):
         logging.debug(f"Blocked! Podcast {podcast_id} is on local block list")
-        return Response("Podcast is gone", 410, {}) 
-    
+        return Response("Podcast is gone", 410, {})
+
     with cloudscraper.create_scraper() as scraper:
         scraper.proxies = proxies
         client = await check_auth(username, password, region, locale, scraper)
@@ -309,7 +310,7 @@ async def addFeedEntry(fg, episode, session, locale):
 
     url, duration = extract_audio_url(episode)
     if url is None:
-        return 
+        return
     logging.debug(f"Found podcast '{episode['title']}'")
     fe.podcast.itunes_duration(duration)
     content_length, content_type = await urlHeadInfo(session, episode['id'], url, locale)
@@ -388,12 +389,14 @@ async def main():
 if __name__ == "__main__":
     if DEBUG:
         logging.info(f"""Spawning server on {PODIMO_BIND_HOST}
-Configuration: 
+Configuration:
 - DEBUG: {DEBUG}
 - LOCAL CREDENTIALS: {LOCAL_CREDENTIALS} ({PODIMO_EMAIL})
 - PODIMO_HOSTNAME: {PODIMO_HOSTNAME}
 - PODIMO_BIND_HOST: {PODIMO_BIND_HOST}
 - PODIMO_PROTOCOL: {PODIMO_PROTOCOL}
+- FEED_USERNAME: {FEED_USERNAME}
+- FEED_PASSWORD: {FEED_PASSWORD}
 - PUBLIC_FEEDS: {PUBLIC_FEEDS}
 - HTTP_PROXY: {HTTP_PROXY}
 - ZENROWS_API: {ZENROWS_API}
@@ -406,3 +409,34 @@ Configuration:
 - BLOCKING: {BLOCKED}
 """)
     asyncio.run(main())
+
+
+from functools import wraps
+
+# Authentication function to check headers
+def check_auth(username, password):
+    return username == FEED_USERNAME and password == FEED_PASSWORD
+
+def requires_auth(f):
+    @wraps(f)
+    async def decorated(*args, **kwargs):
+        # Only enforce authentication if both username and password are set
+        if AUTH_USERNAME and AUTH_PASSWORD:
+            auth = request.authorization
+            if not auth or not check_auth(auth.username, auth.password):
+                return Response(
+                    "Authentication required", status=401,
+                    headers={"WWW-Authenticate": 'Basic realm="Login Required"'}
+                )
+        return await f(*args, **kwargs)
+    return decorated
+
+@app.route('/feed/<podcast_id>.xml')
+@requires_auth
+async def generate_feed(podcast_id):
+    try:
+        feed = await get_feed_for_podcast(podcast_id)
+        return Response(feed, mimetype='application/rss+xml')
+    except Exception as e:
+        logging.error(f"Error generating feed: {e}")
+        return Response("Error generating feed", status=500)
