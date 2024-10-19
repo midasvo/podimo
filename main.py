@@ -176,8 +176,8 @@ async def not_found(error):
 async def serve_basic_auth_feed(podcast_id):
     if LOCAL_CREDENTIALS:
         args = request.args
-        region = args.get("amp;region")
-        locale = args.get("amp;locale")
+        region = args.get("region", "nl")
+        locale = args.get("locale", "nl-NL")
         return await serve_feed(PODIMO_EMAIL, PODIMO_PASSWORD, podcast_id, region, locale)
     else:
         auth = request.authorization
