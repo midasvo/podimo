@@ -228,13 +228,11 @@ async def serve_feed(username, password, podcast_id, region, locale):
         if not client:
             return authenticate()
 
-        offset = request.args.get('offset')
-        if offset is None or offset == "":
-            offset = 0
+
         # Get a list of valid podcasts
         try:
             podcasts = await podcastsToRss(
-                podcast_id, await client.getPodcasts(podcast_id, scraper, offset), locale
+                podcast_id, await client.getPodcasts(podcast_id, scraper), locale
             )
         except Exception as e:
             exception = str(e)
