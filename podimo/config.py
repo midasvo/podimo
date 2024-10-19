@@ -51,6 +51,8 @@ DEBUG = bool(str(config.get("DEBUG", None)).lower() in ['true', '1', 't', 'y', '
 LOCAL_CREDENTIALS = bool(str(config.get("LOCAL_CREDENTIALS", None)).lower() in ['true', '1', 't', 'y', 'yes'])
 PODIMO_EMAIL = config.get("PODIMO_EMAIL", None)
 PODIMO_PASSWORD = config.get("PODIMO_PASSWORD", None)
+FEED_USERNAME = os.getenv("FEED_USERNAME", None)
+FEED_PASSWORD = os.getenv("FEED_PASSWORD", None)
 
 # Podimo's API uses GraphQL. This variable defines the endpoint where
 # the API can be found.
