@@ -39,4 +39,4 @@ class HealthService:
         for feed in self.config["feeds"]:
             result = await self.check_feed_health(feed)
             results.append(result)
-        return results 
+        return results

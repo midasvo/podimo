@@ -1,21 +1,19 @@
-from fastapi import APIRouter
+from quart import Blueprint, Response, render_template
 from services.health_service import HealthService
+import json
 
-router = APIRouter()
+bp = Blueprint('health', __name__)
 health_service = HealthService()
 
-@router.get("/health/check")
+@bp.route('/health/check')
 async def check_health():
     results = await health_service.check_all_feeds()
-    return [result.to_dict() for result in results]
+    return Response(
+        json.dumps([result.to_dict() for result in results]),
+        mimetype='application/json'
+    )
 
-@router.get("/health")
+@bp.route('/health')
 async def health_page():
-    # This would return an HTML template with the health status
     results = await health_service.check_all_feeds()
-    return {
-        "template": "health.html",
-        "context": {
-            "feeds": [result.to_dict() for result in results]
-        }
-    } 
+    return await render_template('health.html', feeds=results) 

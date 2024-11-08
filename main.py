@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.templating import Jinja2Templates
 from routes import health
 
 # Copyright 2022 Thijs Raymakers
@@ -42,7 +43,11 @@ import traceback
 
 # Setup Quart, used for serving the web pages
 app = Quart(__name__)
+app.register_blueprint(health.bp)
 proxies = dict()
+
+# Set up templates
+templates = Jinja2Templates(directory="templates")
 
 #Setup logging
 logging.basicConfig(
