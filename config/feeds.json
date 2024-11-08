@@ -1,0 +1,14 @@
+{
+  "feeds": [
+    {
+      "id": "main-feed",
+      "name": "Main RSS Feed",
+      "url": "http://192.168.1.109:12104/feed/996a2553-ba33-491a-a74d-58259fa3ed27.xml?a999568863.xml?5c48ef5a88&region=nl&locale=nl-NL"
+    },
+    {
+      "id": "secondary-feed",
+      "name": "Secondary RSS Feed",
+      "url": "http://192.168.1.109:12104/feed/9e7d181e-f2e3-48c1-bfb2-a0ff71869d7e.xml?a999568863.xml?5c48ef5a88&region=nl&locale=nl-NL"
+    }
+  ]
+} 

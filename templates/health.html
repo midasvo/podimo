@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Feed Health Status</h1>
+    
+    {% for feed in feeds %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ feed.feed_name }}</h5>
+            <div class="status-indicator {{ 'bg-success' if feed.is_healthy else 'bg-danger' }}">
+                {{ "Healthy" if feed.is_healthy else "Unhealthy" }}
+            </div>
+            
+            <dl class="row mt-3">
+                <dt class="col-sm-3">Last Check</dt>
+                <dd class="col-sm-9">{{ feed.last_check or 'Never' }}</dd>
+                
+                <dt class="col-sm-3">Last Success</dt>
+                <dd class="col-sm-9">{{ feed.last_success or 'Never' }}</dd>
+                
+                <dt class="col-sm-3">Response Time</dt>
+                <dd class="col-sm-9">{{ "%.2f"|format(feed.response_time_ms) }}ms</dd>
+                
+                {% if feed.error_message %}
+                <dt class="col-sm-3">Error</dt>
+                <dd class="col-sm-9 text-danger">{{ feed.error_message }}</dd>
+                {% endif %}
+            </dl>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <button class="btn btn-primary" onclick="location.reload()">
+        Refresh Status
+    </button>
+</div>
+{% endblock %} 

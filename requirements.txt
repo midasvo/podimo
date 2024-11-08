@@ -1,4 +1,12 @@
-aiohttp~=3.8.5
+fastapi==0.109.2
+uvicorn==0.27.1
+sqlalchemy==2.0.27
+pydantic==2.6.1
+feedparser==6.0.11
+python-dateutil==2.8.2
+aiohttp==3.9.3
+beautifulsoup4==4.12.3
+lxml==5.1.0
 feedgen~=0.9.0
 quart~=0.18.4
 hypercorn~=0.14.4
